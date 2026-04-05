@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Planner</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7ff; color: #1a1a2e; }
+
+        header {
+            background: linear-gradient(135deg, #1A56DB, #0a2d6e);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        header h1 { font-size: 2.2rem; margin-bottom: 8px; }
+        header p { opacity: 0.9; font-size: 1rem; }
+
+        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        .card h2 { color: #1A56DB; margin-bottom: 20px; font-size: 1.3rem; }
+
+        .subject-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        .subject-row input, .subject-row select {
+            padding: 10px;
+            border: 2px solid #e0e7ff;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .subject-row input:focus, .subject-row select:focus {
+            border-color: #1A56DB;
+        }
+
+        .labels {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .labels span { font-size: 0.8rem; color: #888; font-weight: 600; }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .btn-add { background: #e8f0ff; color: #1A56DB; }
+        .btn-add:hover { background: #d0e0ff; }
+        .btn-remove { background: #ffe8e8; color: #cc0000; padding: 10px 14px; }
+        .btn-generate {
+            background: #1A56DB;
+            color: white;
+            width: 100%;
+            padding: 14px;
+            font-size: 1rem;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .btn-generate:hover { background: #1344b0; }
+
+        .schedule-block {
+            border-left: 4px solid #1A56DB;
+            background: #f0f4ff;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+        }
+        .schedule-block h3 { color: #1A56DB; margin-bottom: 5px; }
+        .schedule-block p { color: #444; font-size: 0.9rem; line-height: 1.6; }
+
+        .priority-high { border-left-color: #e53e3e; background: #fff5f5; }
+        .priority-high h3 { color: #e53e3e; }
+        .priority-medium { border-left-color: #dd6b20; background: #fffaf0; }
+        .priority-medium h3 { color: #dd6b20; }
+        .priority-low { border-left-color: #38a169; background: #f0fff4; }
+        .priority-low h3 { color: #38a169; }
+
+        .tip {
+            background: #e8f0ff;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #1A56DB;
+        }
+        .tip::before { content: "💡 "; }
+
+        #output { display: none; }
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .badge-high { background: #ffe0e0; color: #e53e3e; }
+        .badge-medium { background: #feebc8; color: #dd6b20; }
+        .badge-low { background: #c6f6d5; color: #38a169; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🧠 AI Study Planner</h1>
+    <p>Smart scheduling that prioritizes your subjects based on deadlines and difficulty</p>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h2>📚 Add Your Subjects</h2>
+        <div class="labels">
+            <span>Subject Name</span>
+            <span>Hours Needed</span>
+            <span>Days Until Exam</span>
+            <span></span>
+        </div>
+        <div id="subjects-container">
+            <div class="subject-row">
+                <input type="text" placeholder="e.g. Mathematics" />
+                <input type="number" placeholder="Hours" min="1" max="50" />
+                <input type="number" placeholder="Days" min="1" max="90" />
+                <button class="btn-remove" onclick="removeRow(this)">✕</button>
+            </div>
+        </div>
+        <br>
+        <button class="btn-add" onclick="addRow()">+ Add Subject</button>
+        <br>
+        <button class="btn-generate" onclick="generatePlan()">🚀 Generate My Study Plan</button>
+    </div>
+
+    <div id="output">
+        <div class="card">
+            <h2>📅 Your Optimized Study Plan</h2>
+            <div id="plan-output"></div>
+        </div>
+        <div class="card">
+            <h2>💡 Smart Study Tips</h2>
+            <div class="tip">Study your highest priority subject first thing in the morning when your brain is fresh.</div>
+            <div class="tip">Use the Pomodoro technique — 25 minutes study, 5 minutes break.</div>
+            <div class="tip">Review yesterday's notes for 10 minutes before starting new topics.</div>
+            <div class="tip">Don't skip low priority subjects completely — maintain consistency.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function addRow() {
+        const container = document.getElementById('subjects-container');
+        const row = document.createElement('div');
+        row.className = 'subject-row';
+        row.innerHTML = `
+            <input type="text" placeholder="e.g. Physics" />
+            <input type="number" placeholder="Hours" min="1" max="50" />
+            <input type="number" placeholder="Days" min="1" max="90" />
+            <button class="btn-remove" onclick="removeRow(this)">✕</button>
+        `;
+        container.appendChild(row);
+    }
+
+    function removeRow(btn) {
+        const rows = document.querySelectorAll('.subject-row');
+        if (rows.length > 1) btn.parentElement.remove();
+    }
+
+    function generatePlan() {
+        const rows = document.querySelectorAll('.subject-row');
+        let subjects = [];
+
+        rows.forEach(row => {
+            const inputs = row.querySelectorAll('input');
+            const name = inputs[0].value.trim();
+            const hours = parseFloat(inputs[1].value);
+            const days = parseFloat(inputs[2].value);
+            if (name && hours && days) {
+                // AI scoring: urgency = hours needed per day available
+                const urgencyScore = hours / days;
+                subjects.push({ name, hours, days, urgencyScore });
+            }
+        });
+
+        if (subjects.length === 0) {
+            alert('Please fill in at least one subject with all details!');
+            return;
+        }
+
+        // Sort by urgency (highest first) - this is the AI prioritization
+        subjects.sort((a, b) => b.urgencyScore - a.urgencyScore);
+
+        const output = document.getElementById('plan-output');
+        output.innerHTML = '';
+
+        subjects.forEach((sub, index) => {
+            let priority, priorityClass, badge;
+            if (sub.urgencyScore > 1) {
+                priority = 'HIGH PRIORITY'; priorityClass = 'priority-high'; badge = 'badge-high';
+            } else if (sub.urgencyScore > 0.5) {
+                priority = 'MEDIUM PRIORITY'; priorityClass = 'priority-medium'; badge = 'badge-medium';
+            } else {
+                priority = 'LOW PRIORITY'; priorityClass = 'priority-low'; badge = 'badge-low';
+            }
+
+            const dailyHours = (sub.hours / sub.days).toFixed(1);
+            const block = document.createElement('div');
+            block.className = `schedule-block ${priorityClass}`;
+            block.innerHTML = `
+                <h3>#${index + 1} ${sub.name} <span class="badge ${badge}">${priority}</span></h3>
+                <p>
+                    📖 Total study needed: <b>${sub.hours} hours</b> &nbsp;|&nbsp;
+                    📅 Days available: <b>${sub.days} days</b><br>
+                    ⏱️ Recommended: <b>${dailyHours} hours/day</b> &nbsp;|&nbsp;
+                    🎯 Urgency score: <b>${sub.urgencyScore.toFixed(2)}</b>
+                </p>
+            `;
+            output.appendChild(block);
+        });
+
+        document.getElementById('output').style.display = 'block';
+        document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
